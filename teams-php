@@ -1,0 +1,29 @@
+<?php
+
+$curl = curl_init();
+
+$post = json_decode(file_get_contents('php://input'));
+$texto = "Sistema: {$post->sistema}, Ambiente: {$post->ambiente}";
+
+
+
+curl_setopt_array($curl, array(
+  CURLOPT_URL => 'https://mregovbr.webhook.office.com/webhookb2/2140e023-abcc-4beb-a3d2-8274b0f7ef92@1272f4a0-ac4d-4206-b681-ca561e418018/IncomingWebhook/3848aeda42f94a77a0acf27584ee66d4/18e0c181-bd36-4c87-babc-6c7c06057b9f',
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_ENCODING => '',
+  CURLOPT_MAXREDIRS => 10,
+  CURLOPT_TIMEOUT => 0,
+  CURLOPT_SSL_VERIFYHOST => 0,
+  CURLOPT_SSL_VERIFYPEER => 0,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+  CURLOPT_CUSTOMREQUEST => 'POST',
+  CURLOPT_POSTFIELDS =>"{'text': '{$texto}'}",
+  CURLOPT_HTTPHEADER => array(
+    'Content-Type: application/json'
+  ),
+));
+
+$response = curl_exec($curl);
+
+curl_close($curl);
