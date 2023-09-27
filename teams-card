@@ -1,0 +1,48 @@
+{
+"@type": "MessageCard",
+"@context": "http://schema.org/extensions",
+"themeColor": "0076D7",
+"summary": "Larry Bryant created a new task",
+"sections": [{
+    "activityTitle": "Consulta Sistemas/Módulos",
+    "activitySubtitle": "Escolha abaixo o sistema e o ambiente para visualizar os módulos disponiveis no portal",
+    "markdown": true
+}],
+"potentialAction": [
+ {
+    "@type": "ActionCard",
+    "name": "Sistemas",
+    "inputs": [
+        {
+        "@type": "TextInput",
+        "id": "sistema",
+        "isMultiline": false,
+        "title": "Digite o nome do sistema Ex.: SIABC"
+    },
+        {
+        "@type": "MultichoiceInput",
+        "id": "ambiente",
+        "title": "Escolha o ambiente",
+        "isMultiSelect": "false",
+        "choices": [{
+            "display": "DES",
+            "value": "DES"
+        }, {
+            "display": "TQS",
+            "value": "TQS"
+        }, {
+            "display": "HMP",
+            "value": "HMP"
+        },{
+            "display": "PRD",
+            "value": "PRD"
+        }]
+    }],
+    "actions": [{
+        "@type": "HttpPOST",
+        "body": "{\"sistema\":\"{{sistema.value}}\", \"ambiente\":\"{{ambiente.value}}\"}",
+        "name": "Save",
+        "target": "https://b1b0-2804-7f74-9cf-4b00-28c9-fc84-9d80-b897.ngrok-free.app/enviamsg.php"
+    }]
+}]
+}
