@@ -1,0 +1,62 @@
+{
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": "0076D7",
+    "summary": "Larry Bryant created a new task",
+    "sections": [{
+        "activityTitle": "Consulta Sistemas/Módulos",
+        "activitySubtitle": "Escolha abaixo o sistema e o ambiente para visualizar os módulos disponiveis no portal",
+        "markdown": true
+    }],
+    "potentialAction": [
+     {
+        "@type": "ActionCard",
+        "name": "Sistemas",
+        "inputs": [
+            {
+            "@type": "TextInput",
+            "id": "sistema",
+            "isMultiline": false,
+            "title": "Digite o nome do sistema Ex.: SIABC"
+        },
+        {
+        "@type": "MultichoiceInput",
+        "id": "pergunta",
+        "title": "Escolha a pergunta",
+        "isMultiSelect": "false",
+        "choices": [{
+            "display": "Deseja saber quais são os módulos desse sistema?",
+            "value": "sistema"
+        }, {
+            "display": "Deseja saber quais são os IPs/hostname desse módulo?",
+            "value": "modulo"
+        }]
+    },
+            {
+            "@type": "MultichoiceInput",
+            "id": "ambiente",
+            "title": "Escolha o ambiente",
+            "isMultiSelect": "false",
+            "choices": [{
+                "display": "DES",
+                "value": "DES"
+            }, {
+                "display": "TQS",
+                "value": "TQS"
+            }, {
+                "display": "HMP",
+                "value": "HMP"
+            },{
+                "display": "PRD",
+                "value": "PRD"
+            }]
+        }],
+        "actions": [{
+            "@type": "HttpPOST",
+            "body": "{\"sistema\":\"{{sistema.value}}\", \"pergunta\":\"{{pergunta.value}}\", \"ambiente\":\"{{ambiente.value}}\"}",
+            "name": "Save",
+            "target": "https://81ec-138-0-246-240.ngrok.io/teams.php"
+        }]
+    }]
+    }
+    
