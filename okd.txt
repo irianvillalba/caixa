@@ -1,0 +1,98 @@
+- criar service 
+
+curl -X POST \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -k \
+     https://api.cluster.example.com:6443/api/v1/namespaces/NOME_DO_NAMESPACE/services \
+     -d '{
+       "apiVersion": "v1",
+       "kind": "Service",
+       "metadata": {
+         "name": "NOME_DO_SERVICO",
+         "namespace": "NOME_DO_NAMESPACE"
+       },
+       "spec": {
+         "selector": {
+           "app": "NOME_DO_LABEL_APP"
+         },
+         "ports": [
+           {
+             "protocol": "TCP",
+             "port": NOME_DA_PORTA_NO_SERVICO,
+             "targetPort": NOME_DA_PORTA_NO_CONTAINER
+           }
+         ]
+       }
+     }'
+
+- criar rota
+
+	 curl -X POST \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -k \
+     https://api.cluster.example.com:6443/apis/route.openshift.io/v1/namespaces/NOME_DO_NAMESPACE/routes \
+     -d '{
+       "apiVersion": "route.openshift.io/v1",
+       "kind": "Route",
+       "metadata": {
+         "name": "NOME_DA_ROTA",
+         "namespace": "NOME_DO_NAMESPACE"
+       },
+       "spec": {
+         "to": {
+           "kind": "Service",
+           "name": "NOME_DO_SERVICO"
+         },
+         "port": {
+           "targetPort": "NOME_DA_PORTA_NO_SERVICO"
+         },
+         "wildcardPolicy": "Subdomain"
+       }
+     }'
+
+- alterar limit
+
+curl -X PATCH \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/merge-patch+json" \
+     -k \
+     https://api.cluster.example.com:6443/api/v1/namespaces/NOME_DO_NAMESPACE/limitranges/NOME_DO_LIMITRANGE \
+     -d '{
+       "spec": {
+         "limits": [
+           {
+             "type": "Pod",
+             "max": {
+               "cpu": "500m",
+               "memory": "512Mi"
+             },
+             "min": {
+               "cpu": "100m",
+               "memory": "256Mi"
+             }
+           }
+           // Adicione ou modifique limites conforme necessário
+         ]
+       }
+     }'
+	 
+- alterar quota
+
+curl -X PATCH \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/merge-patch+json" \
+     -k \
+     https://api.cluster.example.com:6443/api/v1/namespaces/NOME_DO_NAMESPACE/resourcequotas/NOME_DO_RESOURCEQUOTA \
+     -d '{
+       "spec": {
+         "hard": {
+           "pods": "10",
+           "requests.cpu": "1",
+           "requests.memory": "1Gi",
+           "limits.cpu": "2",
+           "limits.memory": "2Gi"
+         }
+       }
+     }'
