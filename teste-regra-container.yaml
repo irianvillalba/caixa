@@ -1,0 +1,68 @@
+---
+- name: Teste de regra para container
+  hosts: localhost
+  gather_facts: no
+  vars:
+    namespace: "existing-namespace"  # Substitua pelo nome do namespace existente
+    pod_name: "nginx-test-pod"
+    image: "nginx:latest"
+    ping_ip: "10.44.33.22"
+    target_ip: "10.20.30.40"
+    target_port: "50"
+    openshift_api_url: "https://api.openshift-cluster.example.com:6443"  # URL da API do OpenShift
+    openshift_token: "your_openshift_token"  # Substitua pelo seu token do OpenShift
+
+  tasks:
+    - name: Login to OpenShift with token
+      shell: oc login --token={{ openshift_token }} --server={{ openshift_api_url }}
+      register: login_result
+      ignore_errors: yes
+    
+    - name: Fail if login was not successful
+      fail:
+        msg: "Login to OpenShift failed"
+      when: login_result.rc != 0
+
+    - name: Create a pod
+      community.kubernetes.k8s:
+        state: present
+        namespace: "{{ namespace }}"
+        definition:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: "{{ pod_name }}"
+          spec:
+            containers:
+            - name: nginx
+              image: "{{ image }}"
+              command: ["/bin/sh"]
+              args: ["-c", "sleep 3600"]
+    
+    - name: Wait for the pod to be ready
+      community.kubernetes.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ namespace }}"
+        name: "{{ pod_name }}"
+      register: pod_info
+      until: pod_info.resources[0].status.phase == "Running"
+      retries: 10
+      delay: 5
+    
+    - name: Check connectivity with ping
+      command: "kubectl exec -n {{ namespace }} {{ pod_name }} -- ping -c 4 {{ ping_ip }}"
+      register: ping_result
+      ignore_errors: yes
+    
+    - name: Fail if ping was not successful
+      fail:
+        msg: "Ping to {{ ping_ip }} failed"
+      when: ping_result.rc != 0
+    
+    - name: Delete the pod
+      community.kubernetes.k8s:
+        state: absent
+        namespace: "{{ namespace }}"
+        name: "{{ pod_name }}"
+        kind: Pod
