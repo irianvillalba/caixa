@@ -1,0 +1,50 @@
+---
+- name: Check if port 80 is open from 10.30.40.50 to 50.1.34.54 using telnet
+  hosts: local
+  tasks:
+    - name: Create a pod to test connectivity
+      k8s:
+        state: present
+        namespace: your-namespace
+        definition:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: test-telnet
+          spec:
+            containers:
+              - name: telnet
+                image: busybox
+                command: ['sh', '-c', 'while true; do sleep 30; done;']
+      register: pod_creation
+
+    - name: Wait for the pod to be ready
+      k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: your-namespace
+        name: test-telnet
+      register: pod_info
+      until: pod_info.resources[0].status.phase == "Running"
+      retries: 10
+      delay: 6
+
+    - name: Test if port 80 is open using telnet
+      k8s_exec:
+        namespace: your-namespace
+        pod: test-telnet
+        command: ['sh', '-c', 'telnet 50.1.34.54 80; if [ $? -eq 0 ]; then echo SUCCESS; else echo FAILURE; fi']
+      register: telnet_result
+      failed_when: "'FAILURE' in telnet_result.stdout"
+
+    - name: Delete the test pod
+      k8s:
+        state: absent
+        namespace: your-namespace
+        api_version: v1
+        kind: Pod
+        name: test-telnet
+
+    - name: Output the result
+      debug:
+        msg: "Port 80 is open and accessible" if 'SUCCESS' in telnet_result.stdout else "Port 80 is not accessible"
